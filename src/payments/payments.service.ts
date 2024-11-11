@@ -9,7 +9,7 @@ export class PaymentsService {
   private readonly stripe = new Stripe(envs.STRIPE_SECRET);
 
   async createPaymentSession(paymentSessionDto: PaymentSessionDto) {
-    const { currency, items } = paymentSessionDto;
+    const { currency, items, orderId } = paymentSessionDto;
 
     const lineItems = items.map((item) => ({
       price_data: {
@@ -25,14 +25,16 @@ export class PaymentsService {
     const session = await this.stripe.checkout.sessions.create({
       // Add here the order ID
       payment_intent_data: {
-        metadata: {},
+        metadata: {
+          orderId,
+        },
       },
 
       line_items: lineItems,
       mode: 'payment',
       // Redirecciones cuando se realizan los pagos.
-      success_url: 'http://localhost:3000/payments/success',
-      cancel_url: 'http://localhost:3000/payments/cancel',
+      success_url: envs.STRIPE_SUCCESS_URL,
+      cancel_url: envs.STRIPE_CANCEL_URL,
     });
 
     return session;
@@ -47,7 +49,7 @@ export class PaymentsService {
     // const endpointSecret = 'whsec_b72e73c3b3c0e2cc9111b6ca0b8659c54f54ac02af79fcf15e7d9b899dd851a1';
 
     // Prod
-    const endpointSecret = 'whsec_DQURm3dROaWow5YIYfuYYvF6yGPRbjOM';
+    const endpointSecret = envs.STRIPE_ENDPOINT_SECRET;
 
     try {
       event = this.stripe.webhooks.constructEvent(
@@ -62,7 +64,8 @@ export class PaymentsService {
 
     switch (event.type) {
       case 'charge.succeeded':
-        console.log(event);
+        const chargeSucceeded = event.data.object as Stripe.Charge;
+        console.log({ metadata: chargeSucceeded.metadata.orderId });
         break;
       default:
         console.log(`event  ${event.type} not handled`);

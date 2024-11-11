@@ -10,6 +10,9 @@ import {
 
 export class PaymentSessionDto {
   @IsString()
+  public orderId: string;
+
+  @IsString()
   public currency: string;
 
   @IsArray()
