@@ -62,6 +62,7 @@ export class PaymentsService {
       return;
     }
 
+    console.log({ event });
     switch (event.type) {
       case 'charge.succeeded':
         const chargeSucceeded = event.data.object as Stripe.Charge;
@@ -70,8 +71,6 @@ export class PaymentsService {
       default:
         console.log(`event  ${event.type} not handled`);
     }
-
-    console.log({ event });
 
     return res.status(200).json({
       sig,
