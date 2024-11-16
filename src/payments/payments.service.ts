@@ -37,7 +37,12 @@ export class PaymentsService {
       cancel_url: envs.STRIPE_CANCEL_URL,
     });
 
-    return session;
+    //  ya no retornamos toda la session porque no lo necesitamos
+    return {
+      cancelUrl: session.cancel_url,
+      succerssUrl: session.success_url,
+      url: session.url,
+    };
   }
 
   async stripeWebhook(req: Request, res: Response) {
